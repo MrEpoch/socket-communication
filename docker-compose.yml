@@ -12,11 +12,10 @@ services:
       - .env
     environment:
       - NODE_ENV=development
-      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@postgres:${DB_PORT}/${DB_NAME}
+      - DATABASE_URL=postgresql://alex:${DB_PASSWORD}@postgres:5432/postgres
     depends_on:
       - database
       - mailhog
-      - cache
 
   mailhog:
     image: mailhog/mailhog
@@ -29,11 +28,11 @@ services:
     env_file:
       - .env
     environment:
-      POSTGRES_USER: ${DB_USER}
+      POSTGRES_USER: alex
       POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_DB: postgres
     ports:
-      - "${DB_PORT}:5432"
+      - "5432:5432"
     container_name: postgres
     volumes:
       - pgdata:/var/lib/postgresql/data
