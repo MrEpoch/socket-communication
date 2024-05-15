@@ -1,4 +1,4 @@
-'use server';
+"use server";
 
 import { z } from "zod";
 import { prisma } from "../db";
@@ -16,27 +16,29 @@ interface clientUser {
 
 export async function createUser(user: clientUser) {
   try {
-  const userZod = z.object({
-    username: z.string(),
-    email: z.string().email(),
-    password: z.string(),
-  })
+    const userZod = z.object({
+      username: z.string(),
+      email: z.string().email(),
+      password: z.string(),
+    });
 
-  const userZodResult = userZod.safeParse(user);
-  if (!userZodResult.success) {
-    return { data: null, error: "Invalid values" };
-  }
-  
-  const hashed_password = await new Argon2id().hash(userZodResult.data.password);
-  const data = await prisma.user.create({
-    data: {
-      username: userZodResult.data.username,
-      email: userZodResult.data.email,
-      password_hash: hashed_password,
-    },
-  })
+    const userZodResult = userZod.safeParse(user);
+    if (!userZodResult.success) {
+      return { data: null, error: "Invalid values" };
+    }
 
-  return { data: data, error: null };
+    const hashed_password = await new Argon2id().hash(
+      userZodResult.data.password,
+    );
+    const data = await prisma.user.create({
+      data: {
+        username: userZodResult.data.username,
+        email: userZodResult.data.email,
+        password_hash: hashed_password,
+      },
+    });
+
+    return { data: data, error: null };
   } catch (error) {
     console.log(error);
     return { data: null, error: "Failed to create user" };
@@ -181,7 +183,10 @@ export async function updateEmail(user: User, email: string): Promise<any> {
   }
 }
 
-export async function updateUsername(user: User, username: string): Promise<any> {
+export async function updateUsername(
+  user: User,
+  username: string,
+): Promise<any> {
   try {
     if (!checkVerified(user)) {
       return { data: null, error: "Email not verified" };
@@ -221,7 +226,6 @@ export async function updateUsername(user: User, username: string): Promise<any>
     return false;
   }
 }
-
 
 // TODO: Need to add some logic for when user deletes account what will then happen to his data and servers with channels, will it be deleted or inherited by another user? Or single user server case?
 

@@ -1,4 +1,4 @@
-'use server';
+"use server";
 import { z } from "zod";
 import { sendMail } from "../SendMail";
 import crypto from "crypto";
