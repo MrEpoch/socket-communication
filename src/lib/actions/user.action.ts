@@ -38,10 +38,61 @@ export async function createUser(user: clientUser) {
       },
     });
 
+    if (!data) {
+      return { data: null, error: "Failed to create user" };
+    }
+
+    const session = await lucia.createSession(data.id, {});
+    const sessionCookie = lucia.createSessionCookie(session.id);
+    cookies().set(sessionCookie.name, sessionCookie.value, sessionCookie.attributes)
     return { data: data, error: null };
   } catch (error) {
     console.log(error);
     return { data: null, error: "Failed to create user" };
+  }
+}
+
+export async function logIn(email: string, password: string) {
+  try {
+
+    const emailZodCheck = z.string().email();
+    const emailZodResult = emailZodCheck.safeParse(email);
+    if (!emailZodResult.success) {
+      return { data: null, error: "Invalid email" };
+    }
+
+    const passwordZodCheck = z.string().min(8).max(255);
+    const passwordZodResult = passwordZodCheck.safeParse(password);
+    if (!passwordZodResult.success) {
+      return { data: null, error: "Invalid password" };
+    }
+
+    const user = await prisma.user.findUnique({
+      where: {
+        email,
+      },
+    });
+
+    if (!user) {
+      return { data: null, error: "User not found" };
+    }
+
+    const passwordMatch = await new Argon2id().verify(
+      user.password_hash,
+      passwordZodResult.data,
+    );
+
+    if (!passwordMatch) {
+      return { data: null, error: "Invalid password" };
+    }
+
+    const session = await lucia.createSession(user.id, {});
+    const sessionCookie = lucia.createSessionCookie(session.id);
+    cookies().set(sessionCookie.name, sessionCookie.value, sessionCookie.attributes)
+    return { data: user, error: null };
+  } catch (error) {
+    console.log(error);
+    return { data: null, error: "Failed to log in" };
   }
 }
 

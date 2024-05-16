@@ -9,6 +9,7 @@ import CustomField from "../CustomField";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/use-toast";
+import { createUser, logIn } from "@/lib/actions/user.action";
 
 export const formSchema = z.object({
   username: z
@@ -52,10 +53,17 @@ export default function ActionForm({ isLogin }: { isLogin?: boolean }) {
     setSubmitting(true);
 
     if (isLogin) {
-      const loginData = {
-        email: data.email,
-        password: data.password,
-      };
+      const login = await logIn(data.email, data.password);
+      if (login.error) {
+        setSubmitting(false);
+        toast({
+          title: "Error",
+          description: login.error,
+          variant: "destructive",
+        });
+        return;
+      }
+      router.push("/account");
     } else {
       if (data.password !== data.confirmPassword) {
         setSubmitting(false);
@@ -72,6 +80,18 @@ export default function ActionForm({ isLogin }: { isLogin?: boolean }) {
         username: data.username,
         password: data.password,
       };
+
+      const register = await createUser(registerData);
+      if (register.error) {
+        setSubmitting(false);
+        toast({
+          title: "Error",
+          description: register.error,
+          variant: "destructive",
+        });
+        return;
+      }
+      router.push("/account");
     }
 
     setSubmitting(false);
@@ -92,7 +112,7 @@ export default function ActionForm({ isLogin }: { isLogin?: boolean }) {
             name="username"
             formLabel={"Username (3-50 characters)*"}
             render={({ field }) => (
-              <Input role="action-input-field" value={field.value} {...field} />
+              <Input type="text" role="action-input-field" value={field.value} {...field} />
             )}
           />
         )}
