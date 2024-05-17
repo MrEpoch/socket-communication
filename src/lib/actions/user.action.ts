@@ -3,7 +3,6 @@
 import { z } from "zod";
 import { prisma } from "../db";
 import { Argon2id } from "oslo/password";
-import { User } from "lucia";
 import { isWithinExpirationDate } from "oslo";
 import { cookies } from "next/headers";
 import { lucia } from "../auth";
@@ -27,14 +26,17 @@ export async function createUser(user: clientUser) {
       return { data: null, error: "Invalid values" };
     }
 
-    const hashed_password = await new Argon2id().hash(
-      userZodResult.data.password,
-    );
+    const argon2id = new Argon2id();
+    const passwordHash = await argon2id.hash(userZodResult.data.password);
+    if (passwordHash === null) {
+      return { data: null, error: "Failed to hash password" };
+    }
+
     const data = await prisma.user.create({
       data: {
         username: userZodResult.data.username,
         email: userZodResult.data.email,
-        password_hash: hashed_password,
+        password_hash: passwordHash,
       },
     });
 
@@ -77,7 +79,8 @@ export async function logIn(email: string, password: string) {
       return { data: null, error: "User not found" };
     }
 
-    const passwordMatch = await new Argon2id().verify(
+    const argon2id = new Argon2id();
+    const passwordMatch = await argon2id.verify(
       user.password_hash,
       passwordZodResult.data,
     );
@@ -97,7 +100,7 @@ export async function logIn(email: string, password: string) {
 }
 
 export async function verifyEmailCode(
-  user: User,
+  user: any,
   code: string,
 ): Promise<boolean> {
   try {
@@ -177,7 +180,8 @@ export async function updatePassword(
       return { data: null, error: "Invalid password" };
     }
 
-    const hashed_password = await new Argon2id().hash(passwordZodResult.data);
+    const argon2Id = new Argon2id();
+    const hashed_password = await argon2Id.hash(passwordZodResult.data);
     await prisma.user.update({
       where: {
         id: user.id,
@@ -193,7 +197,7 @@ export async function updatePassword(
   }
 }
 
-export async function updateEmail(user: User, email: string): Promise<any> {
+export async function updateEmail(user: any, email: string): Promise<any> {
   try {
     if (!checkVerified(user)) {
       return { data: null, error: "Email not verified" };

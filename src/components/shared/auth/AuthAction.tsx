@@ -105,6 +105,7 @@ export default function ActionForm({ isLogin }: { isLogin?: boolean }) {
         onSubmit={form.handleSubmit(onSubmit)}
         className="space-y-8 w-full"
         role="action-form"
+    method="POST"
       >
         {!isLogin && (
           <CustomField
