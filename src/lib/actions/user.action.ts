@@ -6,6 +6,7 @@ import { Argon2id } from "oslo/password";
 import { isWithinExpirationDate } from "oslo";
 import { cookies } from "next/headers";
 import { lucia } from "../auth";
+import { validateRequest } from "../validateRequest";
 
 interface clientUser {
   username: string;
@@ -147,10 +148,6 @@ export async function getUserFromSessionCookie() {
   return { user, error: null };
 }
 
-function checkVerified(user: User): boolean {
-  return user.emailVerified;
-}
-
 // Multiple functions for updating user: updatePassword, updateEmail, updateUsername for UX
 
 interface updateUserReturn {
@@ -160,17 +157,12 @@ interface updateUserReturn {
 }
 
 export async function updatePassword(
-  user: User,
   password: string,
 ): Promise<any> {
   try {
-    const userLucia = await getUserFromSessionCookie();
+    const userLucia = await validateRequest();
 
-    if (userLucia.error) {
-      return { data: null, error: "Invalid session" };
-    }
-
-    if (userLucia.user?.id !== user.id) {
+    if (!userLucia.session) {
       return { data: null, error: "Invalid session" };
     }
 
@@ -184,7 +176,7 @@ export async function updatePassword(
     const hashed_password = await argon2Id.hash(passwordZodResult.data);
     await prisma.user.update({
       where: {
-        id: user.id,
+        id: userLucia.user.id,
       },
       data: {
         password_hash: hashed_password,
@@ -197,23 +189,22 @@ export async function updatePassword(
   }
 }
 
-export async function updateEmail(user: any, email: string): Promise<any> {
+export async function updateEmail(email: string): Promise<any> {
   try {
-    if (!checkVerified(user)) {
-      return { data: null, error: "Email not verified" };
-    }
 
-    const userLucia = await getUserFromSessionCookie();
+    const userLucia = await validateRequest();
 
-    if (userLucia.error) {
+
+
+    if (!userLucia.session) {
       return { data: null, error: "Invalid session" };
     }
 
-    if (userLucia.user?.id !== user.id) {
+    if (!userLucia.user) {
       return { data: null, error: "Invalid session" };
     }
-
-    if (!userLucia.user?.emailVerified) {
+    
+    if (!userLucia.user.emailVerified) {
       return { data: null, error: "Email not verified" };
     }
 
@@ -225,7 +216,7 @@ export async function updateEmail(user: any, email: string): Promise<any> {
 
     await prisma.user.update({
       where: {
-        id: user.id,
+        id: userLucia.user.id,
       },
       data: {
         email: emailZodResult.data,
@@ -239,21 +230,17 @@ export async function updateEmail(user: any, email: string): Promise<any> {
 }
 
 export async function updateUsername(
-  user: User,
   username: string,
 ): Promise<any> {
   try {
-    if (!checkVerified(user)) {
-      return { data: null, error: "Email not verified" };
-    }
 
-    const userLucia = await getUserFromSessionCookie();
+    const userLucia = await validateRequest();
 
-    if (userLucia.error) {
+    if (!userLucia.session) {
       return { data: null, error: "Invalid session" };
     }
 
-    if (userLucia.user?.id !== user.id) {
+    if (!userLucia.user) {
       return { data: null, error: "Invalid session" };
     }
 
@@ -269,7 +256,7 @@ export async function updateUsername(
 
     await prisma.user.update({
       where: {
-        id: user.id,
+        id: userLucia.user.id,
       },
       data: {
         username: usernameZodResult.data,
@@ -284,24 +271,24 @@ export async function updateUsername(
 
 // TODO: Need to add some logic for when user deletes account what will then happen to his data and servers with channels, will it be deleted or inherited by another user? Or single user server case?
 
-export async function deleteUser(user: User): Promise<any> {
-  const userLucia = await getUserFromSessionCookie();
+export async function deleteUser(): Promise<any> {
+  const userLucia = await validateRequest();
 
-  if (userLucia.error) {
+  if (!userLucia.session) {
     return { data: null, error: "Invalid session" };
   }
 
-  if (userLucia.user?.id !== user.id) {
+  if (!userLucia.user) {
     return { data: null, error: "Invalid session" };
   }
 
-  if (!userLucia.user?.emailVerified) {
+  if (!userLucia.user.emailVerified) {
     return { data: null, error: "Email not verified" };
   }
 
   return await prisma.user.delete({
     where: {
-      id: user.id,
+      id: userLucia.user.id,
     },
   });
 }

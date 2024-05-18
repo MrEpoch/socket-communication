@@ -24,7 +24,10 @@ export const formSchema = z.object({
   confirmPassword: z
     .string()
     .min(8, { message: "Must be 8 or more characters long" })
-    .max(50, { message: "Must be 50 or fewer characters long" }),
+  .max(50, { message: "Must be 50 or fewer characters long" })
+  .refine((data) => data === formSchema.shape.password, {
+    message: "Passwords do not match",
+  })
 });
 
 export default function ActionForm({ isLogin }: { isLogin?: boolean }) {

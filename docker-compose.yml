@@ -11,7 +11,8 @@ services:
     env_file:
       - .env
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=development 
+      - DATABASE_URL=postgresql://alex:9c5aa8d2ac145ab53ed959ab0cf3b2e85c1cbffe5c343e8e78e9f353ac5845cb3bbdf22587c71d7b831d5197b1a157073f379e3d0e06d2011b10d220625df1e4@postgres:5432/postgres
     depends_on:
       - database
       - mailhog
