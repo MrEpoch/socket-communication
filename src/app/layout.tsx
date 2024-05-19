@@ -19,10 +19,13 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-      <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} storageKey="discord-theme">
-          <main className="min-h-screen w-full">
-            {children}
-          </main>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem={false}
+          storageKey="discord-theme"
+        >
+          <main className="min-h-screen w-full">{children}</main>
           <Toaster />
         </ThemeProvider>
       </body>

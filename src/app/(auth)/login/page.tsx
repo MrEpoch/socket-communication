@@ -1,5 +1,5 @@
-import ActionForm from '@/components/shared/auth/AuthAction'
-import React from 'react'
+import ActionForm from "@/components/shared/auth/AuthAction";
+import React from "react";
 
 export default function page() {
   return (
@@ -10,6 +10,5 @@ export default function page() {
         </div>
       </div>
     </main>
-  )
+  );
 }
-

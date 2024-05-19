@@ -13,6 +13,7 @@ type customFieldType = {
   render: (props: { field: any }) => React.ReactNode;
   className?: string;
   formLabel?: string;
+  formLabelClassName?: string;
 };
 
 export default function CustomField({
@@ -21,6 +22,7 @@ export default function CustomField({
   name,
   formLabel,
   className = "",
+  formLabelClassName = "",
 }: customFieldType) {
   return (
     <FormField
@@ -28,7 +30,9 @@ export default function CustomField({
       name={name}
       render={({ field }) => (
         <FormItem className={className}>
-          {formLabel && <FormLabel>{formLabel}</FormLabel>}
+          {formLabel && (
+            <FormLabel className={formLabelClassName}>{formLabel}</FormLabel>
+          )}
           <FormControl>{render({ field })}</FormControl>
         </FormItem>
       )}

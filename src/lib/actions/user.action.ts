@@ -47,7 +47,11 @@ export async function createUser(user: clientUser) {
 
     const session = await lucia.createSession(data.id, {});
     const sessionCookie = lucia.createSessionCookie(session.id);
-    cookies().set(sessionCookie.name, sessionCookie.value, sessionCookie.attributes)
+    cookies().set(
+      sessionCookie.name,
+      sessionCookie.value,
+      sessionCookie.attributes,
+    );
     return { data: data, error: null };
   } catch (error) {
     console.log(error);
@@ -57,7 +61,6 @@ export async function createUser(user: clientUser) {
 
 export async function logIn(email: string, password: string) {
   try {
-
     const emailZodCheck = z.string().email();
     const emailZodResult = emailZodCheck.safeParse(email);
     if (!emailZodResult.success) {
@@ -92,7 +95,11 @@ export async function logIn(email: string, password: string) {
 
     const session = await lucia.createSession(user.id, {});
     const sessionCookie = lucia.createSessionCookie(session.id);
-    cookies().set(sessionCookie.name, sessionCookie.value, sessionCookie.attributes)
+    cookies().set(
+      sessionCookie.name,
+      sessionCookie.value,
+      sessionCookie.attributes,
+    );
     return { data: user, error: null };
   } catch (error) {
     console.log(error);
@@ -156,9 +163,7 @@ interface updateUserReturn {
   password?: string;
 }
 
-export async function updatePassword(
-  password: string,
-): Promise<any> {
+export async function updatePassword(password: string): Promise<any> {
   try {
     const userLucia = await validateRequest();
 
@@ -191,10 +196,7 @@ export async function updatePassword(
 
 export async function updateEmail(email: string): Promise<any> {
   try {
-
     const userLucia = await validateRequest();
-
-
 
     if (!userLucia.session) {
       return { data: null, error: "Invalid session" };
@@ -203,7 +205,7 @@ export async function updateEmail(email: string): Promise<any> {
     if (!userLucia.user) {
       return { data: null, error: "Invalid session" };
     }
-    
+
     if (!userLucia.user.emailVerified) {
       return { data: null, error: "Email not verified" };
     }
@@ -229,11 +231,8 @@ export async function updateEmail(email: string): Promise<any> {
   }
 }
 
-export async function updateUsername(
-  username: string,
-): Promise<any> {
+export async function updateUsername(username: string): Promise<any> {
   try {
-
     const userLucia = await validateRequest();
 
     if (!userLucia.session) {

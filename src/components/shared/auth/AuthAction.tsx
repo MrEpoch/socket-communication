@@ -24,10 +24,22 @@ export const formSchema = z.object({
   confirmPassword: z
     .string()
     .min(8, { message: "Must be 8 or more characters long" })
-  .max(50, { message: "Must be 50 or fewer characters long" })
-  .refine((data) => data === formSchema.shape.password, {
-    message: "Passwords do not match",
-  })
+    .max(50, { message: "Must be 50 or fewer characters long" })
+    .refine(
+      (data) => {
+        console.log(formSchema.shape.password.safeParse(data).data);
+        const passwordZodCheck = z.string().min(8).max(255);
+        const passwordZodResult = passwordZodCheck.safeParse(data);
+        if (!passwordZodResult.success) {
+          return false;
+        }
+
+        return data === passwordZodResult.data;
+      },
+      {
+        message: "Passwords do not match",
+      },
+    ),
 });
 
 export default function ActionForm({ isLogin }: { isLogin?: boolean }) {
@@ -108,7 +120,7 @@ export default function ActionForm({ isLogin }: { isLogin?: boolean }) {
         onSubmit={form.handleSubmit(onSubmit)}
         className="space-y-8 w-full"
         role="action-form"
-    method="POST"
+        method="POST"
       >
         {!isLogin && (
           <CustomField
@@ -116,7 +128,12 @@ export default function ActionForm({ isLogin }: { isLogin?: boolean }) {
             name="username"
             formLabel={"Username (3-50 characters)*"}
             render={({ field }) => (
-              <Input type="text" role="action-input-field" value={field.value} {...field} />
+              <Input
+                type="text"
+                role="action-input-field"
+                value={field.value}
+                {...field}
+              />
             )}
           />
         )}

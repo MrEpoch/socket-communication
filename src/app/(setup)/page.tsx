@@ -1,5 +1,5 @@
 import InitialModal from "@/components/shared/modals/initialModal";
-import { lucia } from "@/lib/auth"
+import { lucia } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { validateRequest } from "@/lib/validateRequest";
 import { cookies } from "next/headers";
@@ -20,13 +20,13 @@ export default async function Page() {
     where: {
       members: {
         some: {
-          userId: auth.user.id
-        }
-      }
-    }
-  })
+          userId: auth.user.id,
+        },
+      },
+    },
+  });
 
   if (server) return redirect("/servers/" + server.id);
 
-  return <InitialModal />
+  return <InitialModal />;
 }
