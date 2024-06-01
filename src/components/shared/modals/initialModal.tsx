@@ -63,7 +63,7 @@ export default function InitialModal() {
                 control={form.control}
                 name="serverName"
                 formLabel={"Server name (3-50 characters)*"}
-                formLabelClassName="uppercase text-xs font-bold text-zinc-500 dark:text-secondary/70"
+                formLabelClassName="text-xs styled-font-text"
                 render={({ field }) => (
                   <Input
                     type="text"

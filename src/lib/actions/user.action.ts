@@ -7,6 +7,8 @@ import { isWithinExpirationDate } from "oslo";
 import { cookies } from "next/headers";
 import { lucia } from "../auth";
 import { validateRequest } from "../validateRequest";
+import { generateEmailVerificationCode } from "../emailCode";
+import { sendMail } from "../SendMail";
 
 interface clientUser {
   username: string;
@@ -44,6 +46,18 @@ export async function createUser(user: clientUser) {
     if (!data) {
       return { data: null, error: "Failed to create user" };
     }
+
+    const verificationCode = await generateEmailVerificationCode(
+      data.id,
+      data.email,
+    );
+
+    await sendMail({
+      to: data.email,
+      subject: "Verify your email",
+      text: `Your verification code is ${verificationCode}`,
+    });
+
 
     const session = await lucia.createSession(data.id, {});
     const sessionCookie = lucia.createSessionCookie(session.id);

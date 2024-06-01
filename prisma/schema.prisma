@@ -14,6 +14,8 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+
+
 model User {
   id       String @id @default(uuid())
   sessions Session[]
@@ -28,6 +30,8 @@ model User {
   servers Server[]
   members Member[]
   channels Channel[]
+
+  messages Message[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -109,9 +113,25 @@ model Channel {
   serverId String
   server Server @relation(fields: [serverId], references: [id], onDelete: Cascade)
 
+  messages Message[] // Added messages relation
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([userId])
   @@index([serverId])
+}
+
+
+model Message {
+  id        String   @id @default(uuid())
+  content   String
+  channel   Channel  @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  channelId String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId  String
+  createdAt DateTime @default(now())
+
+  @@index([channelId])
+  @@index([authorId])
 }
