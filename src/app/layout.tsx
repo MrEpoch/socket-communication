@@ -25,9 +25,7 @@ export default function RootLayout({
           enableSystem={false}
           storageKey="discord-theme"
         >
-          <main className="min-h-screen w-full">
-    {children}
-    </main>
+          <main className="min-h-screen w-full">{children}</main>
           <Toaster />
         </ThemeProvider>
       </body>

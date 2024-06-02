@@ -58,7 +58,6 @@ export async function createUser(user: clientUser) {
       text: `Your verification code is ${verificationCode}`,
     });
 
-
     const session = await lucia.createSession(data.id, {});
     const sessionCookie = lucia.createSessionCookie(session.id);
     cookies().set(

@@ -9,6 +9,7 @@ This project aims to build a clone of Discord as a portfolio piece, demonstratin
 The following requirements are categorized based on MoSCoW prioritization:
 
 ### Must Have
+
 - Real-time messaging using Socket.io
 - User authentication and authorization using Lucia-auth
 - User profiles
@@ -17,14 +18,17 @@ The following requirements are categorized based on MoSCoW prioritization:
 - Roles with permissions (User, Server Admin)
 
 ### Should Have
+
 - Voice chat functionality
 - Image upload via Uploadthing
 
 ### Could Have
+
 - Custom emojis and reactions
 - Server moderation tools
 
 ### Won't Have
+
 - Video calls
 - Extensive third-party integrations
 
@@ -33,6 +37,7 @@ The following requirements are categorized based on MoSCoW prioritization:
 ### High-Level Architecture Design
 
 The architecture for the Discord clone will include the following main components:
+
 1. **Frontend**: Built with Next.js, it will handle the user interface and client-side logic.
 2. **Backend**: Implemented with Node.js, it will use Socket.io for real-time communication and Prisma for database operations.
 3. **Authentication**: Managed by Lucia-auth for user authentication and authorization.
@@ -45,7 +50,7 @@ Here's the high-level component diagram:
 ```mermaid
 graph TD
   subgraph "Frontend (Next.js)"
-    UI[User Interface] 
+    UI[User Interface]
     SocketClient[Socket.io Client]
   end
 
@@ -81,7 +86,6 @@ graph TD
   Prisma --> PostgreSQL
   SocketClient --> VoiceChatService
 ```
-
 
 ## Schema of database
 

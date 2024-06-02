@@ -10,6 +10,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/use-toast";
 import { createUser, logIn } from "@/lib/actions/user.action";
+import { PasswordStrengthMeter } from "./PasswordStrengthMeter";
 
 export const formSchema = z.object({
   username: z
@@ -163,6 +164,9 @@ export default function ActionForm({ isLogin }: { isLogin?: boolean }) {
             />
           )}
         />
+        {!isLogin && (
+          <PasswordStrengthMeter password={form.watch("password")} />
+        )}
         {!isLogin && (
           <CustomField
             control={form.control}
