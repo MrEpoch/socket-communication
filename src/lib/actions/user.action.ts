@@ -4,11 +4,12 @@ import { z } from "zod";
 import { prisma } from "../db";
 import { Argon2id } from "oslo/password";
 import { isWithinExpirationDate } from "oslo";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { lucia } from "../auth";
 import { validateRequest } from "../validateRequest";
 import { generateEmailVerificationCode } from "../emailCode";
 import { sendMail } from "../SendMail";
+import { getIpAddress } from "../serverUtils";
 
 interface clientUser {
   username: string;
@@ -43,6 +44,8 @@ export async function createUser(user: clientUser) {
       },
     });
 
+    const ip = getIpAddress();
+
     if (!data) {
       return { data: null, error: "Failed to create user" };
     }
@@ -50,12 +53,17 @@ export async function createUser(user: clientUser) {
     const verificationCode = await generateEmailVerificationCode(
       data.id,
       data.email,
+      ip,
     );
+
+    if (verificationCode.error) {
+      return { data: null, error: "Failed to create user" };
+    }
 
     await sendMail({
       to: data.email,
       subject: "Verify your email",
-      text: `Your verification code is ${verificationCode}`,
+      text: `Your verification code is ${verificationCode.data}`,
     });
 
     const session = await lucia.createSession(data.id, {});
@@ -121,13 +129,24 @@ export async function logIn(email: string, password: string) {
 }
 
 export async function verifyEmailCode(
-  user: any,
-  code: string,
+  { code }: { code: string },
 ): Promise<boolean> {
+
+  const userLucia = await validateRequest();
+  if (!userLucia.session) {
+    return false;
+  }
+
+  const emailCodeZodCheck = z.string().length(8).regex(/^[0-9]+$/);
+  const emailCodeZodResult = emailCodeZodCheck.safeParse(code);
+  if (!emailCodeZodResult.success) {
+    return false;
+  }
+
   try {
     const email_verify_code = await prisma.emailVerificationCode.findUnique({
       where: {
-        userId: user.id,
+        userId: userLucia.user.id,
       },
     });
 
@@ -143,7 +162,7 @@ export async function verifyEmailCode(
 
     if (
       !isWithinExpirationDate(email_verify_code.expiresAt) ||
-      email_verify_code.email !== user.email
+      email_verify_code.email !== userLucia.user.email
     ) {
       return false;
     }
@@ -304,3 +323,41 @@ export async function deleteUser(): Promise<any> {
     },
   });
 }
+
+export async function resendEmailVerificationCode(): Promise<any> {
+  const userLucia = await validateRequest();
+  if (!userLucia.session) {
+    return { data: null, error: "Invalid session" };
+  }
+
+  const ip = getIpAddress();
+
+  const verificationCode = await generateEmailVerificationCode(
+    userLucia.user.id,
+    userLucia.user.email,
+    ip,
+  );
+
+  if (verificationCode.error) {
+    return { data: null, error: verificationCode.error };
+  }
+
+  await sendMail({
+    to: userLucia.user.email,
+    subject: "Verify your email",
+    text: `Your verification code is ${verificationCode.data}`,
+  });
+
+  try {
+    await prisma.emailVerificationCode.delete({
+      where: {
+        userId: userLucia.user.id,
+      },
+    });
+
+    return { data: null, error: null };
+  } catch (error) {
+    return { data: null, error: error };
+  }
+}
+
